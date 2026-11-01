@@ -7,6 +7,12 @@
       "skillPath": "skills/21st-ui/SKILL.md",
       "computedHash": "9821c076881b19fe173eb789ed5b0acc7939251ce08875333b9fc1370c1a1526"
     },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "6f3d1597ca8a4a39dcd701528e88e4e749c5ee9b32b606f66652b8e05a9a0d70"
+    },
     "migrate-radix-to-base": {
       "source": "shadcn/ui",
       "sourceType": "github",
