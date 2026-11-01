@@ -10,7 +10,7 @@ export const PAGES: Record<string, PageMeta> = {
     path: '/',
     title: 'Análise grátis das suas partidas de xadrez | Zakk Chess',
     description:
-      'Digite seu nick do Chess.com e analise suas partidas com o Stockfish, de graça e sem limite: nota de cada lance, precisão, rating estimado e onde você mais erra.',
+      'Digite seu nick do Chess.com e analise suas partidas com o Stockfish, grátis e sem limite: nota de cada lance, precisão, rating estimado e onde você mais erra.',
   },
   pro: {
     path: '/pro',

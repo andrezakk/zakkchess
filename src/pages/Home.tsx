@@ -40,8 +40,7 @@ export function Home() {
               <span className="h1-sub">Análise grátis das suas partidas de xadrez</span>
             </h1>
             <p className="lead">
-              Análise completa das suas partidas do Chess.com, de graça e sem limite. Digite seu nick e descubra onde
-              você perde pontos, lance por lance.
+              Digite seu nick do Chess.com e o Stockfish confere cada lance das suas partidas. Descubra onde você perde pontos, sem limite de análises.
             </p>
             <NickForm />
             <p className="form-note">Grátis e ilimitado. Sem cadastro. Funciona no celular.</p>
