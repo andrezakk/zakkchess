@@ -13,7 +13,7 @@ export const PAGES: Record<string, PageMeta> = {
       'Digite seu nick do Chess.com e analise suas partidas com o Stockfish, grátis e sem limite: nota de cada lance, precisão, rating estimado e onde você mais erra.',
   },
   pro: {
-    path: '/pro',
+    path: '/pro/',
     title: 'Zakk Chess Pro: plano de treino de xadrez de 30 dias',
     description:
       'Diagnóstico das suas últimas 30 partidas do Chess.com, os erros que mais se repetem e um plano de treino de 30 dias. R$ 19,99 por mês, plano único.',
