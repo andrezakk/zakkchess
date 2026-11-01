@@ -22,7 +22,7 @@ function parse(fen: string): Cell[][] {
 const ERROR_SQ = {file: 4, rank: 3}; // e5 (coluna 4, linha 3 a partir do topo)
 const BEST_SQ = {file: 3, rank: 5}; // d3
 
-export function Board() {
+export function HeroBoard() {
   const grid = parse(FEN);
   return (
     <svg
