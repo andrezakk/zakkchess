@@ -1,7 +1,8 @@
 import {useMemo} from 'react';
 import {Link} from 'wouter';
 import {CoachBubble, Mascot} from '../components/Mascot';
-import {Footer, Header} from '../components/ui';
+import {Chessboard} from 'react-chessboard';
+import {accuracyColor, Footer, Header} from '../components/ui';
 import {ERROR_LABEL, MASCOT_NAME, PHASE_LABEL} from '../lib/coach';
 import {buildPlan, buildReport, diagnosis, momentText} from '../lib/report';
 import {useAnalysesVersion} from '../lib/runner';
@@ -11,6 +12,7 @@ import {usePro} from '../lib/pro';
 
 const FREE_DAYS = 3;
 const fmt = (n: number) => n.toFixed(1).replace('.', ',');
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 export function Report({nick}: {nick: string}) {
   useTitle(`Onde ${nick} mais erra`);
@@ -43,6 +45,7 @@ export function Report({nick}: {nick: string}) {
   }
 
   const maxPhase = Math.max(1, ...report.phases.map((p) => p.share));
+  const worst = report.worstMoments[0];
   const maxType = Math.max(1, ...report.types.map((t) => t.count));
 
   return (
@@ -50,40 +53,64 @@ export function Report({nick}: {nick: string}) {
       <Header nick={nick} />
       <main className="page report-page">
         <h1 className="page-title">Onde você mais erra</h1>
-        <p className="muted">
-          Baseado em {report.games} {report.games === 1 ? 'partida analisada' : 'partidas analisadas'}.
-          {report.games < 5 && ' Analise pelo menos 5 para um retrato mais fiel.'}
-        </p>
 
-        <div className="stats">
-          <div className="stat">
-            <span className="stat-value">{fmt(report.accuracy)}</span>
-            <span className="stat-label">precisão média</span>
+        <section className="diagnosis-hero" aria-label={`Diagnóstico do ${MASCOT_NAME}`}>
+          <div className="diagnosis-copy">
+            <CoachBubble mood={report.totalErrors ? 'think' : 'wow'} className="diagnosis">
+              <p>
+                <strong>Diagnóstico do {MASCOT_NAME}:</strong> {diagnosis(report)}
+              </p>
+            </CoachBubble>
+            <p className="facts">
+              {report.games} {report.games === 1 ? 'partida analisada' : 'partidas analisadas'}, precisão média{' '}
+              <strong style={{color: accuracyColor(report.accuracy)}}>{fmt(report.accuracy)}</strong>
+              {report.rating ? (
+                <>
+                  , rating estimado <strong>{report.rating.toLocaleString('pt-BR')}</strong>
+                </>
+              ) : null}
+              . {plural(report.results.win, 'vitória', 'vitórias')}, {plural(report.results.draw, 'empate', 'empates')} e{' '}
+              {plural(report.results.loss, 'derrota', 'derrotas')}
+              {report.brilliants > 0 && <>, com {plural(report.brilliants, 'lance brilhante', 'lances brilhantes')}</>}.
+              {report.games < 5 && ' Analise pelo menos 5 partidas para um retrato mais fiel.'}
+            </p>
           </div>
-          <div className="stat">
-            <span className="stat-value">{report.rating ? report.rating.toLocaleString('pt-BR') : '—'}</span>
-            <span className="stat-label">rating médio estimado</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">
-              {report.results.win}
-              <small>V</small> {report.results.draw}
-              <small>E</small> {report.results.loss}
-              <small>D</small>
-            </span>
-            <span className="stat-label">resultados</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">{report.brilliants}</span>
-            <span className="stat-label">lances brilhantes</span>
-          </div>
-        </div>
-
-        <CoachBubble mood={report.totalErrors ? 'think' : 'wow'} className="diagnosis">
-          <p>
-            <strong>Diagnóstico do {MASCOT_NAME}:</strong> {diagnosis(report)}
-          </p>
-        </CoachBubble>
+          {worst && (
+            <figure className="worst">
+              <div className="worst-board">
+                <Chessboard
+                  options={{
+                    id: 'worst',
+                    position: worst.move.fenBefore,
+                    boardOrientation: worst.move.color === 'w' ? 'white' : 'black',
+                    allowDragging: false,
+                    showAnimations: false,
+                    showNotation: false,
+                    darkSquareStyle: {backgroundColor: '#2f7d6d'},
+                    lightSquareStyle: {backgroundColor: '#e8d9b5'},
+                    boardStyle: {borderRadius: 12, overflow: 'hidden'},
+                    arrows: [
+                      {startSquare: worst.move.from, endSquare: worst.move.to, color: 'rgba(255, 94, 87, 0.9)'},
+                      ...(worst.move.bestUci
+                        ? [{startSquare: worst.move.bestUci.slice(0, 2), endSquare: worst.move.bestUci.slice(2, 4), color: 'rgba(79, 209, 176, 0.95)'}]
+                        : []),
+                    ],
+                  }}
+                />
+              </div>
+              <figcaption>
+                <span className="worst-title">Seu lance mais caro</span>
+                <span>{momentText(worst)}</span>
+                <span className="worst-legend">
+                  <span className="dot dot-bad" /> o que você jogou <span className="dot dot-good" /> o melhor
+                </span>
+                <Link href={`/u/${nick}/p/${worst.saved.month}/${worst.saved.game.uuid}?lance=${worst.move.ply}`} className="btn btn-secondary btn-sm">
+                  Abrir na partida
+                </Link>
+              </figcaption>
+            </figure>
+          )}
+        </section>
 
         <div className="report-grid">
           <section className="panel" aria-labelledby="fases">
@@ -126,13 +153,13 @@ export function Report({nick}: {nick: string}) {
             )}
           </section>
 
-          {report.worstMoments.length > 0 && (
+          {report.worstMoments.length > 1 && (
             <section className="panel" aria-labelledby="momentos">
               <h2 id="momentos" className="panel-title">
-                Os lances que mais custaram
+                Outros lances caros
               </h2>
               <ul className="moments">
-                {report.worstMoments.map((m) => (
+                {report.worstMoments.slice(1).map((m) => (
                   <li key={`${m.saved.game.uuid}-${m.move.ply}`}>
                     <Link href={`/u/${nick}/p/${m.saved.month}/${m.saved.game.uuid}?lance=${m.move.ply}`}>
                       <span>{momentText(m)}</span>
@@ -182,9 +209,10 @@ export function Report({nick}: {nick: string}) {
           <ol className="focus-list">
             {plan.focus.map((f, i) => (
               <li key={f.key}>
-                <span className="focus-week">{i === 0 ? 'Semana 1 e 4' : `Semana ${i + 1}`}</span>
                 <strong>{f.title}</strong>
-                <span className="muted">{f.why}</span>
+                <span className="muted">
+                  {i === 0 ? 'Semanas 1 e 4' : `Semana ${i + 1}`}. {f.why}
+                </span>
               </li>
             ))}
           </ol>
@@ -197,6 +225,7 @@ export function Report({nick}: {nick: string}) {
                   <strong>{d.title}</strong>
                   <span className="muted small">{d.minutes} min</span>
                 </div>
+                <p className="day-focus">{d.focus}</p>
                 <ul>
                   {d.tasks.map((t) => (
                     <li key={t.text}>

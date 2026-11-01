@@ -3,7 +3,8 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Chessboard} from 'react-chessboard';
 import {Link} from 'wouter';
 import {CoachBubble} from '../components/Mascot';
-import {ClassBadge, Footer, Header, Spinner} from '../components/ui';
+import {accuracyColor, ClassBadge, Footer, Header, Spinner} from '../components/ui';
+import {IconArrowLeft, IconFirst, IconLast, IconNext, IconPrev, SideKing} from '../components/icons';
 import {CLASS_ORDER, type AnalyzedMove, type GameAnalysis, type SideSummary} from '../lib/analysis';
 import {
   ChessComError,
@@ -134,7 +135,7 @@ export function Game({nick, month, uuid, initialPly}: {nick: string; month: stri
   const squareStyles: Record<string, React.CSSProperties> = {};
   if (lastPlain) {
     const color = current ? CLASS_INFO[current.cls].color : '#4fd1b0';
-    squareStyles[lastPlain.from] = {background: `${color}55`};
+    squareStyles[lastPlain.from] = {background: 'rgba(246, 243, 234, 0.22)'};
     squareStyles[lastPlain.to] = {background: `${color}88`};
   }
   const arrows =
@@ -164,10 +165,10 @@ export function Game({nick, month, uuid, initialPly}: {nick: string; month: stri
       <main className="page game-page">
         <div className="game-head">
           <Link href={`/u/${nick}`} className="back-link">
-            ← Partidas
+            <IconArrowLeft /> Partidas
           </Link>
           <p className="game-title">
-            <span className={`result result-${out}`}>{out === 'win' ? 'Vitória' : out === 'loss' ? 'Derrota' : 'Empate'}</span>{' '}
+            <span className={`result-pill result-${out}`}>{out === 'win' ? 'Vitória' : out === 'loss' ? 'Derrota' : 'Empate'}</span>{' '}
             contra <strong>{opp.username}</strong>
           </p>
           <p className="muted small">
@@ -213,28 +214,8 @@ export function Game({nick, month, uuid, initialPly}: {nick: string; month: stri
             </div>
             <PlayerStrip name={me.username} rating={me.rating} color={userColor} summary={analysis ? (side === 'white' ? analysis.white : analysis.black) : null} you />
 
-            <div className="controls" role="group" aria-label="Navegar pelos lances">
-              <button onClick={() => go(0)} aria-label="Início" disabled={ply === 0}>
-                ⏮
-              </button>
-              <button onClick={() => go(ply - 1)} aria-label="Lance anterior" disabled={ply === 0}>
-                ◀
-              </button>
-              <span className="ply-count" aria-live="polite">
-                {ply === 0 ? 'Início' : `Lance ${Math.ceil(ply / 2)}${ply % 2 ? '' : '…'}`}
-              </span>
-              <button onClick={() => go(ply + 1)} aria-label="Próximo lance" disabled={ply === total}>
-                ▶
-              </button>
-              <button onClick={() => go(total)} aria-label="Fim" disabled={ply === total}>
-                ⏭
-              </button>
-            </div>
-          </div>
-
-          <div className="review-panel">
             {analysis && coach ? (
-              <CoachBubble mood={coach.mood} className="coach-live">
+              <CoachBubble key={ply} mood={coach.mood} className={`coach-live coach-${current?.cls ?? 'start'}`}>
                 <p>
                   {current && <ClassBadge cls={current.cls} size="sm" />} {coach.text}
                 </p>
@@ -273,6 +254,26 @@ export function Game({nick, month, uuid, initialPly}: {nick: string; month: stri
               </CoachBubble>
             )}
 
+            <div className="controls" role="group" aria-label="Navegar pelos lances">
+              <button onClick={() => go(0)} aria-label="Início" disabled={ply === 0}>
+                <IconFirst />
+              </button>
+              <button onClick={() => go(ply - 1)} aria-label="Lance anterior" disabled={ply === 0}>
+                <IconPrev />
+              </button>
+              <span className="ply-count" aria-live="polite">
+                {ply === 0 ? 'Início' : `Lance ${Math.ceil(ply / 2)}${ply % 2 ? '' : '…'}`}
+              </span>
+              <button onClick={() => go(ply + 1)} aria-label="Próximo lance" disabled={ply === total} className="ctrl-main">
+                <IconNext />
+              </button>
+              <button onClick={() => go(total)} aria-label="Fim" disabled={ply === total}>
+                <IconLast />
+              </button>
+            </div>
+          </div>
+
+          <div className="review-panel">
             {analysis && <EvalGraph analysis={analysis} ply={ply} onPick={go} userColor={userColor} />}
 
             {analysis && (
@@ -308,12 +309,16 @@ function PlayerStrip({
 }) {
   return (
     <div className="player-strip">
-      <span className={`side-dot side-${color === 'w' ? 'white' : 'black'}`} aria-hidden="true" />
+      <SideKing color={color === 'w' ? 'white' : 'black'} label={color === 'w' ? 'Brancas' : 'Pretas'} />
       <span className="strip-name">
         {name}
         {you && <span className="you-tag">você</span>} <span className="muted">({rating})</span>
       </span>
-      {summary && <span className="strip-acc">{summary.accuracy.toFixed(1).replace('.', ',')}</span>}
+      {summary && (
+        <span className="strip-acc" style={{color: accuracyColor(summary.accuracy)}}>
+          {summary.accuracy.toFixed(1).replace('.', ',')}
+        </span>
+      )}
     </div>
   );
 }
@@ -350,7 +355,7 @@ function EvalGraph({analysis, ply, onPick, userColor}: {analysis: GameAnalysis; 
   return (
     <figure className="graph">
       <figcaption className="sr-only">Gráfico da vantagem ao longo da partida. Toque para ir a um lance.</figcaption>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" onClick={onClick} role="img" aria-label="Gráfico de vantagem">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" onClick={onClick} role="img" aria-label="Gráfico de vantagem. Use as setas do teclado para mudar de lance." tabIndex={0}>
         <rect width={W} height={H} fill="#1c2230" />
         <path d={area} fill="#f6f3ea" />
         <line x1="0" x2={W} y1={H / 2} y2={H / 2} stroke="#4fd1b0" strokeOpacity="0.35" strokeWidth="1" vectorEffect="non-scaling-stroke" />
@@ -377,12 +382,12 @@ function Summary({analysis, whiteName, blackName, userColor}: {analysis: GameAna
       <div className="summary-head">
         <div className={userColor === 'w' ? 'is-you' : ''}>
           <span className="summary-name">{whiteName}</span>
-          <span className="summary-acc">{fmt(analysis.white.accuracy)}</span>
+          <span className="summary-acc" style={{color: accuracyColor(analysis.white.accuracy)}}>{fmt(analysis.white.accuracy)}</span>
           <span className="summary-cap">precisão</span>
         </div>
         <div className={userColor === 'b' ? 'is-you' : ''}>
           <span className="summary-name">{blackName}</span>
-          <span className="summary-acc">{fmt(analysis.black.accuracy)}</span>
+          <span className="summary-acc" style={{color: accuracyColor(analysis.black.accuracy)}}>{fmt(analysis.black.accuracy)}</span>
           <span className="summary-cap">precisão</span>
         </div>
       </div>

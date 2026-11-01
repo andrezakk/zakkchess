@@ -1,6 +1,6 @@
 // Relatório "onde você mais erra" + plano de treino de 30 dias, a partir das partidas analisadas.
 import type {AnalyzedMove, ErrorType, Phase} from './analysis';
-import {ERROR_LABEL, PHASE_LABEL, sanPt} from './coach';
+import {ERROR_LABEL, sanPt} from './coach';
 import {openingName, outcomeFor, userSide, type ChessComGame} from './chesscom';
 import type {SavedAnalysis} from './storage';
 
@@ -110,7 +110,8 @@ export function buildReport(username: string, items: SavedAnalysis[]): Report {
 export function diagnosis(r: Report): string {
   if (!r.totalErrors) return 'Nenhum erro sério nas partidas analisadas. Analise mais partidas para eu achar um padrão.';
   const phase = r.phases.find((p) => p.phase === r.weakPhase)!;
-  let text = `${phase.share}% dos seus erros acontecem no ${PHASE_LABEL[phase.phase].toLowerCase()}`;
+  const where = {abertura: 'na abertura', meio: 'no meio-jogo', final: 'no final'}[phase.phase];
+  let text = `${phase.share}% dos seus erros acontecem ${where}`;
   if (r.weakType) {
     const t = r.types[0];
     text += `, e o tipo que mais se repete é "${ERROR_LABEL[t.type].toLowerCase()}" (${t.count} ${t.count === 1 ? 'vez' : 'vezes'})`;
@@ -128,7 +129,7 @@ export function momentText(m: Moment): string {
 
 // ---------- plano de treino ----------
 
-export type TrainingTask = {text: string; link?: {label: string; url: string}};
+export type TrainingTask = {text: string; short?: string; link?: {label: string; url: string}};
 export type TrainingDay = {day: number; title: string; focus: string; minutes: number; tasks: TrainingTask[]};
 
 type Theme = {
@@ -146,9 +147,9 @@ const THEMES: Record<string, Theme> = {
     title: 'Pare de deixar peças sem defesa',
     why: 'Peças penduradas foram o seu erro mais caro.',
     drills: [
-      {text: 'Resolva 15 problemas de peça pendurada.', link: {label: 'Abrir problemas', url: LICHESS('hangingPiece')}},
-      {text: 'Antes de cada lance numa partida, pergunte: "o que ficou sem defesa?". Jogue 2 partidas de 10 minutos só com essa regra.'},
-      {text: 'Resolva 10 problemas de ataque duplo, o jeito mais comum de ganhar uma peça solta.', link: {label: 'Abrir problemas', url: LICHESS('fork')}},
+      {short: 'Caça às peças soltas', text: 'Resolva 15 problemas de peça pendurada.', link: {label: 'Abrir problemas', url: LICHESS('hangingPiece')}},
+      {short: 'A pergunta antes do lance', text: 'Antes de cada lance numa partida, pergunte: "o que ficou sem defesa?". Jogue 2 partidas de 10 minutos só com essa regra.'},
+      {short: 'Ataque duplo', text: 'Resolva 10 problemas de ataque duplo, o jeito mais comum de ganhar uma peça solta.', link: {label: 'Abrir problemas', url: LICHESS('fork')}},
     ],
   },
   taticaPerdida: {
@@ -156,10 +157,10 @@ const THEMES: Record<string, Theme> = {
     title: 'Enxergue as táticas',
     why: 'Você deixou passar lances que ganhavam material.',
     drills: [
-      {text: 'Resolva 15 problemas de garfo (ataque duplo).', link: {label: 'Abrir problemas', url: LICHESS('fork')}},
-      {text: 'Resolva 12 problemas de cravada.', link: {label: 'Abrir problemas', url: LICHESS('pin')}},
-      {text: 'Resolva 10 problemas de ataque descoberto.', link: {label: 'Abrir problemas', url: LICHESS('discoveredAttack')}},
-      {text: 'Em cada posição de partida, procure primeiro xeques, capturas e ameaças, nessa ordem.'},
+      {short: 'Garfos', text: 'Resolva 15 problemas de garfo (ataque duplo).', link: {label: 'Abrir problemas', url: LICHESS('fork')}},
+      {short: 'Cravadas', text: 'Resolva 12 problemas de cravada.', link: {label: 'Abrir problemas', url: LICHESS('pin')}},
+      {short: 'Ataque descoberto', text: 'Resolva 10 problemas de ataque descoberto.', link: {label: 'Abrir problemas', url: LICHESS('discoveredAttack')}},
+      {short: 'Xeques, capturas, ameaças', text: 'Em cada posição de partida, procure primeiro xeques, capturas e ameaças, nessa ordem.'},
     ],
   },
   naoPuniu: {
@@ -167,8 +168,8 @@ const THEMES: Record<string, Theme> = {
     title: 'Puna os erros do adversário',
     why: 'Seu adversário errou e você não aproveitou.',
     drills: [
-      {text: 'Resolva 15 problemas de vantagem decisiva.', link: {label: 'Abrir problemas', url: LICHESS('crushing')}},
-      {text: 'Quando o adversário jogar um lance estranho, pare 20 segundos e pergunte: "o que ele deixou de proteger?".'},
+      {short: 'Converter a vantagem', text: 'Resolva 15 problemas de vantagem decisiva.', link: {label: 'Abrir problemas', url: LICHESS('crushing')}},
+      {short: 'Os 20 segundos de alerta', text: 'Quando o adversário jogar um lance estranho, pare 20 segundos e pergunte: "o que ele deixou de proteger?".'},
     ],
   },
   deixouMate: {
@@ -176,9 +177,9 @@ const THEMES: Record<string, Theme> = {
     title: 'Proteja o seu rei',
     why: 'Alguns lances seus deixaram mate para o adversário.',
     drills: [
-      {text: 'Resolva 15 problemas de mate em 1.', link: {label: 'Abrir problemas', url: LICHESS('mateIn1')}},
-      {text: 'Resolva 10 problemas de mate na última fileira.', link: {label: 'Abrir problemas', url: LICHESS('backRankMate')}},
-      {text: 'Em toda partida, confira se o seu rei tem uma casa de fuga depois do roque.'},
+      {short: 'Mate em 1', text: 'Resolva 15 problemas de mate em 1.', link: {label: 'Abrir problemas', url: LICHESS('mateIn1')}},
+      {short: 'Mate na última fileira', text: 'Resolva 10 problemas de mate na última fileira.', link: {label: 'Abrir problemas', url: LICHESS('backRankMate')}},
+      {short: 'Casa de fuga do rei', text: 'Em toda partida, confira se o seu rei tem uma casa de fuga depois do roque.'},
     ],
   },
   perdeuMate: {
@@ -186,8 +187,8 @@ const THEMES: Record<string, Theme> = {
     title: 'Finalize as partidas',
     why: 'Você teve mate e não viu.',
     drills: [
-      {text: 'Resolva 15 problemas de mate em 2.', link: {label: 'Abrir problemas', url: LICHESS('mateIn2')}},
-      {text: 'Resolva 8 problemas de mate em 3.', link: {label: 'Abrir problemas', url: LICHESS('mateIn3')}},
+      {short: 'Mate em 2', text: 'Resolva 15 problemas de mate em 2.', link: {label: 'Abrir problemas', url: LICHESS('mateIn2')}},
+      {short: 'Mate em 3', text: 'Resolva 8 problemas de mate em 3.', link: {label: 'Abrir problemas', url: LICHESS('mateIn3')}},
     ],
   },
   posicional: {
@@ -195,9 +196,9 @@ const THEMES: Record<string, Theme> = {
     title: 'Jogue com plano',
     why: 'Muitos erros vieram de lances sem objetivo claro.',
     drills: [
-      {text: 'Resolva 10 problemas de lance tranquilo (sem captura nem xeque).', link: {label: 'Abrir problemas', url: LICHESS('quietMove')}},
-      {text: 'Numa partida de 15 minutos, antes de cada lance diga em voz alta qual é o seu plano.'},
-      {text: 'Resolva 10 problemas de defesa.', link: {label: 'Abrir problemas', url: LICHESS('defensiveMove')}},
+      {short: 'Lances tranquilos', text: 'Resolva 10 problemas de lance tranquilo (sem captura nem xeque).', link: {label: 'Abrir problemas', url: LICHESS('quietMove')}},
+      {short: 'Plano em voz alta', text: 'Numa partida de 15 minutos, antes de cada lance diga em voz alta qual é o seu plano.'},
+      {short: 'Defesa', text: 'Resolva 10 problemas de defesa.', link: {label: 'Abrir problemas', url: LICHESS('defensiveMove')}},
     ],
   },
   abertura: {
@@ -205,9 +206,9 @@ const THEMES: Record<string, Theme> = {
     title: 'Saia bem da abertura',
     why: 'Muitos dos seus erros acontecem nos primeiros 10 lances.',
     drills: [
-      {text: 'Escolha uma abertura de brancas e uma de pretas e estude só elas esta semana.'},
-      {text: 'Resolva 10 problemas de abertura.', link: {label: 'Abrir problemas', url: LICHESS('opening')}},
-      {text: 'Revise no Zakk Chess as 3 últimas partidas e anote onde você saiu da teoria.'},
+      {short: 'Seu repertório', text: 'Escolha uma abertura de brancas e uma de pretas e estude só elas esta semana.'},
+      {short: 'Armadilhas de abertura', text: 'Resolva 10 problemas de abertura.', link: {label: 'Abrir problemas', url: LICHESS('opening')}},
+      {short: 'Onde você saiu da teoria', text: 'Revise no Zakk Chess as 3 últimas partidas e anote onde você saiu da teoria.'},
     ],
   },
   meio: {
@@ -215,8 +216,8 @@ const THEMES: Record<string, Theme> = {
     title: 'Ganhe o meio-jogo',
     why: 'O meio-jogo é onde você mais perde pontos.',
     drills: [
-      {text: 'Resolva 15 problemas de meio-jogo.', link: {label: 'Abrir problemas', url: LICHESS('middlegame')}},
-      {text: 'Antes de cada lance, conte: quantas peças estão atacando e defendendo cada casa importante?'},
+      {short: 'Táticas de meio-jogo', text: 'Resolva 15 problemas de meio-jogo.', link: {label: 'Abrir problemas', url: LICHESS('middlegame')}},
+      {short: 'Conte atacantes e defensores', text: 'Antes de cada lance, conte: quantas peças estão atacando e defendendo cada casa importante?'},
     ],
   },
   final: {
@@ -224,9 +225,9 @@ const THEMES: Record<string, Theme> = {
     title: 'Converta os finais',
     why: 'Os finais estão custando pontos.',
     drills: [
-      {text: 'Resolva 10 problemas de final.', link: {label: 'Abrir problemas', url: LICHESS('endgame')}},
-      {text: 'Resolva 8 problemas de final de torres.', link: {label: 'Abrir problemas', url: LICHESS('rookEndgame')}},
-      {text: 'Treine finais básicos (rei e peão, torre).', link: {label: 'Abrir treino', url: 'https://lichess.org/practice'}},
+      {short: 'Finais', text: 'Resolva 10 problemas de final.', link: {label: 'Abrir problemas', url: LICHESS('endgame')}},
+      {short: 'Finais de torres', text: 'Resolva 8 problemas de final de torres.', link: {label: 'Abrir problemas', url: LICHESS('rookEndgame')}},
+      {short: 'Finais básicos', text: 'Treine finais básicos (rei e peão, torre).', link: {label: 'Abrir treino', url: 'https://lichess.org/practice'}},
     ],
   },
   tempo: {
@@ -234,8 +235,8 @@ const THEMES: Record<string, Theme> = {
     title: 'Use melhor o relógio',
     why: 'Boa parte dos erros veio com pouco tempo.',
     drills: [
-      {text: 'Jogue 2 partidas de 15 + 10. Gaste mais tempo na abertura e no meio-jogo, não no fim.'},
-      {text: 'Resolva 20 problemas fáceis no modo rápido para ganhar velocidade.', link: {label: 'Abrir corrida', url: 'https://lichess.org/storm'}},
+      {short: 'Relógio sob controle', text: 'Jogue 2 partidas de 15 + 10. Gaste mais tempo na abertura e no meio-jogo, não no fim.'},
+      {short: 'Velocidade', text: 'Resolva 20 problemas fáceis no modo rápido para ganhar velocidade.', link: {label: 'Abrir corrida', url: 'https://lichess.org/storm'}},
     ],
   },
 };
@@ -290,12 +291,12 @@ export function buildPlan(r: Report): {focus: Theme[]; days: TrainingDay[]} {
     } else if (week === 3) {
       const mix = focus[(dayInWeek % 3)];
       const drill = mix.drills[dayInWeek % mix.drills.length];
-      days.push({day: d, title: mix.title, focus: 'Mistura dos três temas', minutes: 30, tasks: [drill, {text: 'Jogue 1 partida de 10 minutos ou mais e analise no Zakk Chess.'}]});
+      days.push({day: d, title: drill.short ?? mix.title, focus: 'Mistura dos três temas', minutes: 30, tasks: [drill, {text: 'Jogue 1 partida de 10 minutos ou mais e analise no Zakk Chess.'}]});
     } else {
       const a = theme.drills[dayInWeek % theme.drills.length];
       const b = theme.drills[(dayInWeek + 1) % theme.drills.length];
       const tasks = a === b ? [a] : [a, b];
-      days.push({day: d, title: theme.title, focus: theme.why, minutes: 25 + (dayInWeek % 2) * 5, tasks});
+      days.push({day: d, title: a.short ?? theme.title, focus: theme.title, minutes: 25 + (dayInWeek % 2) * 5, tasks});
     }
   }
   return {focus, days};

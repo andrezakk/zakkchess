@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {Route, Switch, useLocation, useSearch} from 'wouter';
+import {Link, Route, Switch, useLocation, useSearch} from 'wouter';
 import {Home} from './pages/Home';
 import {Player} from './pages/Player';
 import {Game} from './pages/Game';
@@ -38,6 +38,9 @@ export function App() {
             <CoachBubble mood="oops">
               <p>Esta página não existe. Volte para o início e digite seu nick.</p>
             </CoachBubble>
+            <Link href="/" className="btn btn-primary">
+              Ir para o início
+            </Link>
           </main>
           <Footer />
         </Route>

@@ -1,8 +1,10 @@
+import type React from 'react';
 import {FormEvent, useState} from 'react';
 import {Link, useLocation} from 'wouter';
 import type {MoveClass} from '../lib/analysis';
 import {CLASS_INFO} from '../lib/coach';
 import {usePro} from '../lib/pro';
+import {IconBook, IconCheck, IconStar} from './icons';
 
 export function Logo() {
   return (
@@ -26,7 +28,7 @@ export function Header({nick}: {nick?: string}) {
             <Link href={`/u/${nick}/relatorio`}>Relatório</Link>
           </>
         )}
-        <Link href="/pro" className="nav-pro" aria-label={isPro ? 'Sua assinatura Pro' : 'Conhecer o Pro'}>
+        <Link href="/pro" className={`nav-pro ${isPro ? 'is-pro' : ''}`} aria-label={isPro ? 'Sua assinatura Pro' : 'Conhecer o Pro'}>
           {isPro ? 'Pro ✓' : 'Pro'}
         </Link>
       </nav>
@@ -46,13 +48,32 @@ export function Footer() {
   );
 }
 
+const BADGE_ICON: Partial<Record<MoveClass, (p: {size?: number}) => React.ReactElement>> = {
+  best: IconStar,
+  excellent: IconCheck,
+  good: IconCheck,
+  book: IconBook,
+};
+
 export function ClassBadge({cls, size = 'md'}: {cls: MoveClass; size?: 'sm' | 'md' | 'lg'}) {
   const info = CLASS_INFO[cls];
+  const Icon = BADGE_ICON[cls];
+  const px = size === 'sm' ? 12 : size === 'md' ? 15 : 20;
   return (
-    <span className={`badge badge-${size}`} style={{background: info.color}} title={info.label} aria-label={info.label}>
-      {info.symbol}
+    <span className={`badge badge-${size}`} style={{background: info.color}} title={info.label} role="img" aria-label={info.label}>
+      {Icon ? <Icon size={px} /> : info.symbol}
     </span>
   );
+}
+
+/** Cor da precisão na mesma escala das notas dos lances. */
+export function accuracyColor(acc: number): string {
+  if (acc >= 90) return CLASS_INFO.best.color;
+  if (acc >= 80) return CLASS_INFO.excellent.color;
+  if (acc >= 70) return CLASS_INFO.good.color;
+  if (acc >= 60) return CLASS_INFO.inaccuracy.color;
+  if (acc >= 45) return CLASS_INFO.mistake.color;
+  return CLASS_INFO.blunder.color;
 }
 
 export function NickForm({compact = false, initial = ''}: {compact?: boolean; initial?: string}) {

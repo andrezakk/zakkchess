@@ -18,7 +18,32 @@ const CLASS_TEXT: Record<MoveClass, string> = {
   blunder: 'Entregou a partida ou material.',
 };
 
-const SHOWCASE: MoveClass[] = ['brilliant', 'great', 'best', 'excellent', 'good', 'book', 'inaccuracy', 'mistake', 'blunder'];
+const LEGEND: {title: string; items: MoveClass[]}[] = [
+  {title: 'Acertos', items: ['brilliant', 'great', 'best', 'excellent', 'good', 'book']},
+  {title: 'Deslizes', items: ['inaccuracy', 'mistake', 'blunder']},
+];
+
+type Mv = {san: string; cls?: MoveClass};
+// Lances 10 a 17 da partida da Ópera, com as notas que o Zakk Chess deu (profundidade 14).
+const OPERA: [number, Mv, Mv | null][] = [
+  [10, {san: 'Cxb5'}, {san: 'cxb5', cls: 'inaccuracy'}],
+  [11, {san: 'Bxb5+', cls: 'great'}, {san: 'Cbd7'}],
+  [12, {san: 'O-O-O'}, {san: 'Td8'}],
+  [13, {san: 'Txd7'}, {san: 'Txd7'}],
+  [14, {san: 'Td1', cls: 'great'}, {san: 'De6'}],
+  [15, {san: 'Bxd7+'}, {san: 'Cxd7'}],
+  [16, {san: 'Db8+', cls: 'brilliant'}, {san: 'Cxb8'}],
+  [17, {san: 'Td8#'}, null],
+];
+
+function MoveChip({m}: {m: Mv}) {
+  return (
+    <span className={`mv-chip ${m.cls ? `mv-${m.cls}` : ''}`}>
+      {m.cls && <ClassBadge cls={m.cls} size="sm" />}
+      {m.san}
+    </span>
+  );
+}
 
 const STEPS = [
   {title: 'Digite seu nick', text: 'Buscamos suas partidas direto do Chess.com. Sem cadastro, sem senha.'},
@@ -47,7 +72,7 @@ export function Home() {
           </div>
           <div className="hero-board">
             <HeroBoard />
-            <CoachBubble mood="oops" className="hero-coach">
+            <CoachBubble mood="oops" className="hero-coach coach-mistake">
               <p>
                 <strong>Lance 14.</strong> Você jogou <b className="bad">Cxe5</b> e perdeu material. O melhor era{' '}
                 <b className="good">Bd3</b>.
@@ -65,32 +90,49 @@ export function Home() {
             </p>
           </div>
           <div className="showcase">
-            <ul className="class-grid">
-              {SHOWCASE.map((c) => (
-                <li key={c}>
-                  <ClassBadge cls={c} size="lg" />
-                  <div>
-                    <strong style={{color: CLASS_INFO[c].color}}>{CLASS_INFO[c].label}</strong>
-                    <span>{CLASS_TEXT[c]}</span>
-                  </div>
-                </li>
+            <figure className="annotated">
+              <figcaption>
+                <strong>Morphy × Duque de Brunswick</strong>
+                <span>Paris, 1858. O final da partida, analisado pelo Zakk Chess.</span>
+              </figcaption>
+              <ol className="annotated-moves">
+                {OPERA.map(([n, w, b]) => (
+                  <li key={n}>
+                    <span className="mv-n">{n}.</span>
+                    <MoveChip m={w} />
+                    {b ? <MoveChip m={b} /> : <span />}
+                  </li>
+                ))}
+              </ol>
+              <div className="annotated-score" aria-label="Precisão e rating estimado de cada jogador">
+                <div>
+                  <span className="sample-name">Morphy</span>
+                  <span className="sample-acc">98,6</span>
+                  <span className="sample-rating">rating estimado 2.875</span>
+                </div>
+                <div>
+                  <span className="sample-name">Duque</span>
+                  <span className="sample-acc muted-acc">88,8</span>
+                  <span className="sample-rating">rating estimado 2.125</span>
+                </div>
+              </div>
+            </figure>
+            <div className="legend">
+              {LEGEND.map((g) => (
+                <div key={g.title} className="legend-group">
+                  <h3>{g.title}</h3>
+                  <ul>
+                    {g.items.map((c) => (
+                      <li key={c}>
+                        <ClassBadge cls={c} size="md" />
+                        <span>
+                          <strong style={{color: CLASS_INFO[c].color}}>{CLASS_INFO[c].label}</strong> {CLASS_TEXT[c]}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-            <div className="sample-summary" aria-label="Exemplo de resumo de partida">
-              <div className="sample-player">
-                <span className="sample-name">Você</span>
-                <span className="sample-acc">86,4</span>
-                <span className="sample-cap">precisão</span>
-                <span className="sample-rating">Rating da partida: 1.850</span>
-              </div>
-              <div className="sample-vs" aria-hidden="true">×</div>
-              <div className="sample-player">
-                <span className="sample-name">Adversário</span>
-                <span className="sample-acc muted-acc">71,2</span>
-                <span className="sample-cap">precisão</span>
-                <span className="sample-rating">Rating da partida: 1.150</span>
-              </div>
-              <p className="sample-note">Exemplo ilustrativo.</p>
             </div>
           </div>
         </section>

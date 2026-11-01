@@ -1,7 +1,8 @@
 import {useEffect, useMemo, useState} from 'react';
 import {Link} from 'wouter';
 import {CoachBubble} from '../components/Mascot';
-import {Footer, Header, NickForm, Spinner} from '../components/ui';
+import {accuracyColor, Footer, Header, NickForm, Spinner} from '../components/ui';
+import {SideKing} from '../components/icons';
 import {
   ChessComError,
   formatDate,
@@ -202,17 +203,20 @@ export function Player({nick}: {nick: string}) {
               <button className="btn btn-ghost" onClick={cancelQueue}>
                 Parar depois desta
               </button>
-            ) : (
-              <button className="btn btn-primary" onClick={analyzeBatch} disabled={(!isPro && !pending.length) || loading || gathering}>
+            ) : isPro || pending.length > 0 ? (
+              <button className="btn btn-primary" onClick={analyzeBatch} disabled={loading || gathering}>
                 {gathering
                   ? 'Buscando partidas…'
                   : isPro
                     ? `Diagnóstico das últimas ${PRO_BATCH}`
-                    : `Analisar as ${Math.min(BATCH, pending.length) || BATCH} mais recentes`}
+                    : `Analisar as ${Math.min(BATCH, pending.length)} mais recentes`}
               </button>
-            )}
+            ) : null}
             {analyzedCount > 0 && (
-              <Link href={`/u/${nick}/relatorio`} className="btn btn-secondary">
+              <Link
+                href={`/u/${nick}/relatorio`}
+                className={`btn ${!isPro && pending.length === 0 && !runner.current && !runner.queue.length ? 'btn-primary' : 'btn-ghost'}`}
+              >
                 Ver relatório
               </Link>
             )}
@@ -223,20 +227,24 @@ export function Player({nick}: {nick: string}) {
               <Link href="/pro">Conheça o Pro</Link>
             </p>
           )}
-          <div className="depth-row">
-            <span id="depth-label">Profundidade da análise</span>
-            <div className="seg" role="radiogroup" aria-labelledby="depth-label">
-              {[
-                {d: 12, l: 'Rápida'},
-                {d: 14, l: 'Normal'},
-                {d: 18, l: 'Profunda'},
-              ].map((o) => (
-                <button key={o.d} role="radio" aria-checked={depth === o.d} onClick={() => changeDepth(o.d)}>
-                  {o.l}
-                </button>
-              ))}
+          <details className="depth-row">
+            <summary>Ajustes da análise</summary>
+            <div className="depth-inner">
+              <span id="depth-label">Quanto o Stockfish pensa em cada lance</span>
+              <div className="seg" role="radiogroup" aria-labelledby="depth-label">
+                {[
+                  {d: 12, l: 'Leve'},
+                  {d: 14, l: 'Normal'},
+                  {d: 18, l: 'Profunda'},
+                ].map((o) => (
+                  <button key={o.d} role="radio" aria-checked={depth === o.d} onClick={() => changeDepth(o.d)}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+              <span className="muted small">Mais profunda é mais precisa, mas demora mais, principalmente no celular.</span>
             </div>
-          </div>
+          </details>
         </section>
 
         <div className="filters" role="radiogroup" aria-label="Filtrar por ritmo">
@@ -310,7 +318,7 @@ function GameRow({
   return (
     <li>
       <Link href={`/u/${nick}/p/${month}/${g.uuid}`} className={`game-row out-${out}`}>
-        <span className={`side-dot side-${side}`} aria-label={side === 'white' ? 'Você de brancas' : 'Você de pretas'} />
+        <SideKing color={side} label={side === 'white' ? 'Você jogou de brancas' : 'Você jogou de pretas'} />
         <span className="game-main">
           <span className="game-opp">
             {opp.username} <span className="muted">({opp.rating})</span>
@@ -323,7 +331,7 @@ function GameRow({
         <span className="game-side">
           <span className={`result result-${out}`}>{OUTCOME_LABEL[out]}</span>
           {sum ? (
-            <span className="acc-pill" title="Sua precisão nesta partida">
+            <span className="acc-pill" title="Sua precisão nesta partida" style={{color: accuracyColor(sum.accuracy)}}>
               {sum.accuracy.toFixed(1).replace('.', ',')}
             </span>
           ) : running && progress ? (

@@ -209,7 +209,7 @@ function Subscribe() {
         </p>
       )}
       <p className="muted small">
-        Dúvidas? O {MASCOT_NAME} explica tudo em <Link href="/">como funciona</Link>.
+        Dúvidas? O {MASCOT_NAME} explica tudo em <a href="/#como">como funciona</a>.
       </p>
     </section>
   );
