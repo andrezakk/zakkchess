@@ -2,6 +2,7 @@ import {FormEvent, useState} from 'react';
 import {Link, useLocation} from 'wouter';
 import type {MoveClass} from '../lib/analysis';
 import {CLASS_INFO} from '../lib/coach';
+import {usePro} from '../lib/pro';
 
 export function Logo() {
   return (
@@ -12,6 +13,7 @@ export function Logo() {
 }
 
 export function Header({nick}: {nick?: string}) {
+  const {isPro} = usePro();
   return (
     <header className="site-header">
       <Link href="/" className="logo-link" aria-label="Zakk Chess, página inicial">
@@ -24,8 +26,8 @@ export function Header({nick}: {nick?: string}) {
             <Link href={`/u/${nick}/relatorio`}>Relatório</Link>
           </>
         )}
-        <Link href="/pro" className="nav-pro">
-          Pro
+        <Link href="/pro" className="nav-pro" aria-label={isPro ? 'Sua assinatura Pro' : 'Conhecer o Pro'}>
+          {isPro ? 'Pro ✓' : 'Pro'}
         </Link>
       </nav>
     </header>

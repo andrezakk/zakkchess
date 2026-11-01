@@ -625,3 +625,13 @@ h3 { font-family: var(--display); font-weight: 700; font-size: 1.15rem; line-hei
 .pro-price { font-size: 1.05rem; color: var(--muted); }
 .pro-price strong { font-family: var(--display); font-weight: 800; font-size: 2.2rem; color: var(--accent); margin-right: 0.2rem; }
 .th-price { display: block; font-family: var(--body); font-weight: 600; font-size: 0.78rem; color: var(--muted); }
+
+.subscribe { display: grid; gap: 0.8rem; background: linear-gradient(160deg, #15302b 0%, var(--surface) 70%); border: 1px solid #24463f; border-radius: 22px; padding: 1.4rem 1.25rem; }
+.subscribe h2 { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+.btn-big { min-height: 3.6rem; font-size: 1.08rem; width: 100%; }
+.btn-danger { background: var(--danger); color: var(--bg); }
+.link-btn { background: none; border: 0; padding: 0.3rem 0; color: var(--muted); text-decoration: underline; cursor: pointer; justify-self: start; font-size: 0.92rem; }
+.link-btn:hover { color: var(--text); }
+.cancel-confirm { display: grid; gap: 0.6rem; }
+.pro-badge { color: var(--accent); font-weight: 800; }
+.pro-hint { grid-column: 1 / -1; font-size: 0.9rem; color: var(--muted); }

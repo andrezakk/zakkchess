@@ -7,6 +7,7 @@ import {buildPlan, buildReport, diagnosis, momentText} from '../lib/report';
 import {useAnalysesVersion} from '../lib/runner';
 import {useTitle} from '../seo';
 import {listAnalyses} from '../lib/storage';
+import {usePro} from '../lib/pro';
 
 const FREE_DAYS = 3;
 const fmt = (n: number) => n.toFixed(1).replace('.', ',');
@@ -17,6 +18,8 @@ export function Report({nick}: {nick: string}) {
   const items = useMemo(() => listAnalyses(nick), [nick, version]);
   const report = useMemo(() => buildReport(nick, items), [nick, items]);
   const plan = useMemo(() => buildPlan(report), [report]);
+  const {isPro} = usePro();
+  const visibleDays = isPro ? plan.days.length : FREE_DAYS;
 
   if (items.length === 0) {
     return (
@@ -187,7 +190,7 @@ export function Report({nick}: {nick: string}) {
           </ol>
 
           <ol className="days">
-            {plan.days.slice(0, FREE_DAYS).map((d) => (
+            {plan.days.slice(0, visibleDays).map((d) => (
               <li key={d.day} className="day">
                 <div className="day-head">
                   <span className="day-n">Dia {d.day}</span>
@@ -210,6 +213,7 @@ export function Report({nick}: {nick: string}) {
             ))}
           </ol>
 
+          {!isPro && (
           <div className="locked">
             <ol className="days days-locked" aria-hidden="true">
               {plan.days.slice(FREE_DAYS, FREE_DAYS + 4).map((d) => (
@@ -236,6 +240,7 @@ export function Report({nick}: {nick: string}) {
               </Link>
             </div>
           </div>
+          )}
         </section>
       </main>
       <Footer />

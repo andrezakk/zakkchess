@@ -119,15 +119,15 @@ Sugestão, não obrigação. Se tiver um motivo melhor, explique ao Zakk e decid
 
 - **Mascote:** um cavalinho fofo (desenho próprio em SVG, `src/components/Mascot.tsx`). Nome provisório: **Pipo**.
 - **Grátis:** análise ilimitada de partidas, nota de cada lance (brilhante, ótimo, melhor, excelente, bom, teoria, imprecisão, erro, erro grave), precisão e rating estimado, relatório "onde você mais erra" e os 3 primeiros dias do plano de treino.
-- **Pro (pago):** diagnóstico das **últimas 30 partidas** do usuário (os erros que mais se repetem), plano de treino completo de 30 dias e nova análise depois de 30 dias para mostrar a evolução.
+- **Pro (pago, R$ 19,99/mês, plano único, Mercado Pago):** diagnóstico das **últimas 30 partidas** do usuário (os erros que mais se repetem), plano de treino completo de 30 dias e nova análise depois de 30 dias para mostrar a evolução.
 - **Não terá chat.** Nem no grátis nem no Pro.
 - **IA:** talvez nem seja necessária. O diagnóstico usa Stockfish + regras próprias. Só adicionar IA paga com aprovação do Zakk.
+- **Pagamento:** assinatura do Mercado Pago (plano criado sozinho na primeira compra). Código em `netlify/functions/pro.mts`. Precisa da variável `MP_ACCESS_TOKEN` no Netlify (escopo Functions). Não há login: depois de pagar, o navegador guarda um "passe Pro" assinado; em outro aparelho a pessoa recupera pelo e-mail da conta do Mercado Pago (ponto fraco conhecido: quem souber o e-mail de um assinante consegue o passe; trocar por link enviado por e-mail no futuro).
 - **Hospedagem:** Netlify (https://zakkchess.netlify.app). Código no GitHub em `andrezakk/zakkchess`.
 
 ## 8. Em aberto (decidir com o Zakk)
 
 - Nome definitivo do mascote
-- Preço e forma de pagamento do Pro
 - Quantas partidas analisar por vez (análise no navegador é lenta com muitas partidas)
 - Domínio do site
 - Se e quando entra o Lichess

@@ -1,4 +1,6 @@
 import {FormEvent, useState} from 'react';
+import {Link} from 'wouter';
+import {cancelPro, formatDate, restore, startCheckout, usePro} from '../lib/pro';
 import {CoachBubble, Mascot} from '../components/Mascot';
 import {Footer, Header} from '../components/ui';
 import {MASCOT_NAME} from '../lib/coach';
@@ -23,30 +25,6 @@ const STEPS = [
 
 export function Pro() {
   useSeo(PAGES.pro);
-  const [email, setEmail] = useState('');
-  const [nick, setNick] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
-
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setStatus('error');
-      return;
-    }
-    setStatus('sending');
-    try {
-      const body = new URLSearchParams({'form-name': 'lista-pro', email, nick});
-      const res = await fetch('/', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: body.toString(),
-      });
-      setStatus(res.ok ? 'ok' : 'error');
-    } catch {
-      setStatus('error');
-    }
-  };
-
   const cell = (v: boolean | string) =>
     v === true ? <span className="yes" aria-label="Incluído">✓</span> : v === false ? <span className="no" aria-label="Não incluído">—</span> : <span>{v}</span>;
 
@@ -61,10 +39,12 @@ export function Pro() {
             <strong>R$ 19,99</strong> por mês
           </p>
           <p className="lead">
-            Seu treinador de xadrez pessoal. Ele analisa suas últimas 30 partidas, mostra onde você erra e monta 30 dias de treino só
-            para você.
+            Seu treinador de xadrez pessoal. Ele analisa suas últimas 30 partidas, mostra onde você erra e monta 30 dias de
+            treino só para você.
           </p>
         </section>
+
+        <Subscribe />
 
         <ol className="steps pro-steps">
           {STEPS.map((s, i) => (
@@ -107,41 +87,130 @@ export function Pro() {
             </tbody>
           </table>
         </section>
-
-        <section className="waitlist" aria-labelledby="lista">
-          <h2 id="lista">O Pro está chegando</h2>
-          <p className="muted">
-            O Pro vai custar <strong>R$ 19,99 por mês</strong>, plano único. Deixe seu e-mail e seja avisado
-            primeiro quando ele abrir.
-          </p>
-          {status === 'ok' ? (
-            <CoachBubble mood="wow">
-              <p>Pronto, você está na lista! Eu aviso assim que o Pro abrir.</p>
-            </CoachBubble>
-          ) : (
-            <form name="lista-pro" className="waitlist-form" onSubmit={onSubmit} noValidate>
-              <label>
-                <span>E-mail</span>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" required />
-              </label>
-              <label>
-                <span>Nick no Chess.com (opcional)</span>
-                <input value={nick} onChange={(e) => setNick(e.target.value)} autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-              </label>
-              <button type="submit" className="btn btn-primary" disabled={status === 'sending'}>
-                {status === 'sending' ? 'Enviando…' : 'Entrar na lista'}
-              </button>
-              {status === 'error' && (
-                <p className="form-error" role="alert">
-                  Confira o e-mail e tente de novo.
-                </p>
-              )}
-            </form>
-          )}
-          <p className="muted small">Sem spam. Só um aviso do {MASCOT_NAME} quando o Pro abrir.</p>
-        </section>
       </main>
       <Footer />
     </>
+  );
+}
+
+function Subscribe() {
+  const pro = usePro();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [showRestore, setShowRestore] = useState(false);
+  const [email, setEmail] = useState('');
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  const subscribe = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      await startCheckout();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível abrir o pagamento.');
+      setBusy(false);
+    }
+  };
+
+  const onRestore = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      await restore(email);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível recuperar o acesso.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onCancel = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      await cancelPro();
+      setConfirmCancel(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível cancelar.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (pro.isPro && pro.info) {
+    const cancelled = pro.info.status !== 'authorized';
+    return (
+      <section className="subscribe" aria-labelledby="assinatura">
+        <h2 id="assinatura">Você é Pro</h2>
+        <CoachBubble mood="wow">
+          <p>
+            {cancelled
+              ? `Assinatura cancelada. Seu acesso Pro continua até ${formatDate(pro.info.paidUntil)}.`
+              : `Tudo certo! ${pro.info.nextPayment ? `A próxima cobrança é em ${formatDate(pro.info.nextPayment)}.` : ''}`}
+          </p>
+        </CoachBubble>
+        <p className="muted">Abra suas partidas e toque em "Diagnóstico das últimas 30" para gerar seu plano completo.</p>
+        {!cancelled &&
+          (confirmCancel ? (
+            <div className="cancel-confirm">
+              <p>Cancelar a assinatura? Você não será mais cobrado.</p>
+              <div className="batch-actions">
+                <button className="btn btn-ghost" onClick={() => setConfirmCancel(false)} disabled={busy}>
+                  Manter assinatura
+                </button>
+                <button className="btn btn-danger" onClick={onCancel} disabled={busy}>
+                  {busy ? 'Cancelando…' : 'Cancelar assinatura'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="link-btn" onClick={() => setConfirmCancel(true)}>
+              Cancelar assinatura
+            </button>
+          ))}
+        {error && <p className="form-error" role="alert">{error}</p>}
+      </section>
+    );
+  }
+
+  return (
+    <section className="subscribe" aria-labelledby="assinatura">
+      <h2 id="assinatura" className="sr-only">
+        Assinar
+      </h2>
+      <button className="btn btn-primary btn-big" onClick={subscribe} disabled={busy}>
+        {busy && !showRestore ? 'Abrindo o Mercado Pago…' : 'Assinar o Pro por R$ 19,99/mês'}
+      </button>
+      <p className="muted small">
+        Pagamento seguro pelo Mercado Pago, com cartão. Cobrança mensal, cancele quando quiser aqui mesmo.
+      </p>
+      {pro.hasPass && pro.info && !pro.info.active && (
+        <p className="muted small">Sua assinatura anterior não está mais ativa. Assine de novo para voltar ao Pro.</p>
+      )}
+      {showRestore ? (
+        <form className="waitlist-form" onSubmit={onRestore} noValidate>
+          <label>
+            <span>E-mail da sua conta do Mercado Pago</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" required />
+          </label>
+          <button type="submit" className="btn btn-secondary" disabled={busy}>
+            {busy ? 'Procurando…' : 'Recuperar acesso'}
+          </button>
+        </form>
+      ) : (
+        <button className="link-btn" onClick={() => setShowRestore(true)}>
+          Já assinei em outro aparelho
+        </button>
+      )}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      <p className="muted small">
+        Dúvidas? O {MASCOT_NAME} explica tudo em <Link href="/">como funciona</Link>.
+      </p>
+    </section>
   );
 }

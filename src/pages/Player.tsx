@@ -23,12 +23,14 @@ import {MASCOT_NAME} from '../lib/coach';
 import {enqueue, cancelQueue, useAnalysesVersion, useRunner} from '../lib/runner';
 import {useTitle} from '../seo';
 import {getDepth, listAnalyses, loadAnalysis, setDepth} from '../lib/storage';
+import {usePro} from '../lib/pro';
 
 type MonthGames = {month: string; games: ChessComGame[]};
 type Filter = 'all' | 'rapid' | 'blitz' | 'bullet' | 'daily';
 
 const OUTCOME_LABEL = {win: 'Vitória', loss: 'Derrota', draw: 'Empate'};
 const BATCH = 10;
+const PRO_BATCH = 30;
 
 export function Player({nick}: {nick: string}) {
   useTitle(`Partidas de ${nick}`);
@@ -42,6 +44,8 @@ export function Player({nick}: {nick: string}) {
   const [filter, setFilter] = useState<Filter>('all');
   const [depth, setDepthState] = useState(getDepth());
   const runner = useRunner();
+  const {isPro} = usePro();
+  const [gathering, setGathering] = useState(false);
   const version = useAnalysesVersion();
 
   useEffect(() => {
@@ -98,11 +102,35 @@ export function Player({nick}: {nick: string}) {
   const pending = allGames.filter(({g}) => !loadAnalysis(nick, g.uuid));
   const queued = runner.queue.length + (runner.current ? 1 : 0);
 
-  const analyzeBatch = () => {
-    pending
-      .filter(({g}) => filter === 'all' || g.time_class === filter)
-      .slice(0, BATCH)
-      .forEach(({g, month}) => enqueue({username: nick, month, game: g}));
+  const analyzeBatch = async () => {
+    if (!isPro) {
+      pending
+        .filter(({g}) => filter === 'all' || g.time_class === filter)
+        .slice(0, BATCH)
+        .forEach(({g, month}) => enqueue({username: nick, month, game: g}));
+      return;
+    }
+    // Pro: diagnóstico das 30 partidas mais recentes (busca meses anteriores se precisar).
+    setGathering(true);
+    try {
+      let loaded = months;
+      const count = () => loaded.flatMap((m) => m.games).filter((g) => filter === 'all' || g.time_class === filter).length;
+      while (count() < PRO_BATCH && archives[loaded.length] && loaded.length < 12) {
+        const m = archives[loaded.length];
+        loaded = [...loaded, {month: m, games: await getMonth(nick, m)}];
+      }
+      setMonths(loaded);
+      loaded
+        .flatMap((m) => m.games.map((g) => ({g, month: m.month})))
+        .filter(({g}) => filter === 'all' || g.time_class === filter)
+        .slice(0, PRO_BATCH)
+        .filter(({g}) => !loadAnalysis(nick, g.uuid))
+        .forEach(({g, month}) => enqueue({username: nick, month, game: g}));
+    } catch (e) {
+      setError(e instanceof ChessComError ? e.message : 'Não deu para buscar as partidas.');
+    } finally {
+      setGathering(false);
+    }
   };
 
   const changeDepth = (d: number) => {
@@ -175,8 +203,12 @@ export function Player({nick}: {nick: string}) {
                 Parar depois desta
               </button>
             ) : (
-              <button className="btn btn-primary" onClick={analyzeBatch} disabled={!pending.length || loading}>
-                Analisar as {Math.min(BATCH, pending.length) || BATCH} mais recentes
+              <button className="btn btn-primary" onClick={analyzeBatch} disabled={(!isPro && !pending.length) || loading || gathering}>
+                {gathering
+                  ? 'Buscando partidas…'
+                  : isPro
+                    ? `Diagnóstico das últimas ${PRO_BATCH}`
+                    : `Analisar as ${Math.min(BATCH, pending.length) || BATCH} mais recentes`}
               </button>
             )}
             {analyzedCount > 0 && (
@@ -185,6 +217,12 @@ export function Player({nick}: {nick: string}) {
               </Link>
             )}
           </div>
+          {!isPro && (
+            <p className="pro-hint">
+              Quer o diagnóstico das suas últimas 30 partidas e o plano de 30 dias completo?{' '}
+              <Link href="/pro">Conheça o Pro</Link>
+            </p>
+          )}
           <div className="depth-row">
             <span id="depth-label">Profundidade da análise</span>
             <div className="seg" role="radiogroup" aria-labelledby="depth-label">
