@@ -203,19 +203,19 @@ export function Player({nick}: {nick: string}) {
               <button className="btn btn-ghost" onClick={cancelQueue}>
                 Parar depois desta
               </button>
-            ) : isPro || pending.length > 0 ? (
+            ) : isPro || loading || pending.length > 0 ? (
               <button className="btn btn-primary" onClick={analyzeBatch} disabled={loading || gathering}>
                 {gathering
                   ? 'Buscando partidas…'
                   : isPro
                     ? `Diagnóstico das últimas ${PRO_BATCH}`
-                    : `Analisar as ${Math.min(BATCH, pending.length)} mais recentes`}
+                    : `Analisar as ${Math.min(BATCH, pending.length) || BATCH} mais recentes`}
               </button>
             ) : null}
             {analyzedCount > 0 && (
               <Link
                 href={`/u/${nick}/relatorio`}
-                className={`btn ${!isPro && pending.length === 0 && !runner.current && !runner.queue.length ? 'btn-primary' : 'btn-ghost'}`}
+                className={`btn ${!isPro && !loading && pending.length === 0 && !runner.current && !runner.queue.length ? 'btn-primary' : 'btn-ghost'}`}
               >
                 Ver relatório
               </Link>
