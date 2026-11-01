@@ -114,7 +114,7 @@ export function Home() {
             <div>
               <h2 id="pro">Quer um treinador que monta seu mês de treino?</h2>
               <p className="lead">
-                No Zakk Chess Pro, o treinador revisa todas as suas partidas, explica onde você erra e entrega um plano de
+                No Zakk Chess Pro, o treinador analisa suas últimas 30 partidas, mostra os erros que mais se repetem e entrega um plano de
                 30 dias feito para você. Depois de 30 dias, ele analisa de novo e mostra quanto você evoluiu.
               </p>
               <Link href="/pro" className="btn btn-primary">

@@ -7,16 +7,16 @@ const ROWS: {feature: string; free: boolean | string; pro: boolean | string}[] =
   {feature: 'Análise de partidas com o Stockfish', free: 'Ilimitada', pro: 'Ilimitada'},
   {feature: 'Notas de cada lance, precisão e rating estimado', free: true, pro: true},
   {feature: 'Relatório "onde você mais erra"', free: true, pro: true},
-  {feature: 'Importar e revisar todas as suas partidas de uma vez', free: false, pro: true},
-  {feature: 'Treinador explica cada erro com as suas palavras de jogo', free: false, pro: true},
+  {feature: 'Diagnóstico das suas últimas 30 partidas de uma vez', free: false, pro: true},
+  {feature: 'Erros que mais se repetem, com exemplos das suas partidas', free: 'Básico', pro: 'Completo'},
   {feature: 'Plano de treino de 30 dias', free: '3 dias', pro: 'Completo'},
   {feature: 'Nova análise a cada 30 dias, com a sua evolução', free: false, pro: true},
 ];
 
 const STEPS = [
-  {title: 'Diagnóstico', text: 'O treinador revisa todas as suas partidas recentes e encontra os padrões: em que fase, em que tipo de posição e com qual abertura você mais perde pontos.'},
+  {title: 'Diagnóstico', text: 'O treinador analisa suas últimas 30 partidas com o Stockfish e encontra os padrões: em que fase, em que tipo de posição e com qual abertura você mais perde pontos.'},
   {title: '30 dias de treino', text: 'Você recebe um plano dividido dia a dia, com tempo estimado, exercícios e partidas para jogar. Cabe na rotina.'},
-  {title: 'O treinador entra na partida', text: 'Em cada erro, ele abre a posição, mostra o que era melhor e explica por quê, em português simples.'},
+  {title: 'Direto no tabuleiro', text: 'Cada erro do plano leva para a posição da sua partida, com o lance que você jogou e o que era melhor.'},
   {title: 'Reanálise', text: 'No fim do mês, ele analisa de novo, compara com o mês anterior e monta o próximo plano.'},
 ];
 
@@ -56,7 +56,7 @@ export function Pro() {
           <Mascot mood="wow" size={110} />
           <h1>Zakk Chess Pro</h1>
           <p className="lead">
-            Seu treinador de xadrez pessoal. Ele estuda as suas partidas, mostra onde você erra e monta 30 dias de treino só
+            Seu treinador de xadrez pessoal. Ele analisa suas últimas 30 partidas, mostra onde você erra e monta 30 dias de treino só
             para você.
           </p>
         </section>
