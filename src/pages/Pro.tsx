@@ -2,6 +2,7 @@ import {FormEvent, useState} from 'react';
 import {CoachBubble, Mascot} from '../components/Mascot';
 import {Footer, Header} from '../components/ui';
 import {MASCOT_NAME} from '../lib/coach';
+import {PAGES, useSeo} from '../seo';
 
 const ROWS: {feature: string; free: boolean | string; pro: boolean | string}[] = [
   {feature: 'Análise de partidas com o Stockfish', free: 'Ilimitada', pro: 'Ilimitada'},
@@ -21,6 +22,7 @@ const STEPS = [
 ];
 
 export function Pro() {
+  useSeo(PAGES.pro);
   const [email, setEmail] = useState('');
   const [nick, setNick] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
@@ -55,6 +57,9 @@ export function Pro() {
         <section className="pro-hero">
           <Mascot mood="wow" size={110} />
           <h1>Zakk Chess Pro</h1>
+          <p className="pro-price">
+            <strong>R$ 19,99</strong> por mês
+          </p>
           <p className="lead">
             Seu treinador de xadrez pessoal. Ele analisa suas últimas 30 partidas, mostra onde você erra e monta 30 dias de treino só
             para você.
@@ -87,7 +92,7 @@ export function Pro() {
                 </th>
                 <th scope="col">Grátis</th>
                 <th scope="col" className="pro-col">
-                  Pro
+                  Pro <span className="th-price">R$ 19,99/mês</span>
                 </th>
               </tr>
             </thead>
@@ -106,7 +111,8 @@ export function Pro() {
         <section className="waitlist" aria-labelledby="lista">
           <h2 id="lista">O Pro está chegando</h2>
           <p className="muted">
-            Deixe seu e-mail para entrar na lista de lançamento. Quem entrar agora ganha preço de fundador.
+            O Pro vai custar <strong>R$ 19,99 por mês</strong>, plano único. Deixe seu e-mail e seja avisado
+            primeiro quando ele abrir.
           </p>
           {status === 'ok' ? (
             <CoachBubble mood="wow">

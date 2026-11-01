@@ -2,6 +2,7 @@ import {Link} from 'wouter';
 import {HeroBoard} from '../components/HeroBoard';
 import {CoachBubble, Mascot} from '../components/Mascot';
 import {ClassBadge, Footer, Header, NickForm} from '../components/ui';
+import {PAGES, useSeo} from '../seo';
 import type {MoveClass} from '../lib/analysis';
 import {CLASS_INFO, MASCOT_NAME} from '../lib/coach';
 
@@ -27,13 +28,17 @@ const STEPS = [
 ];
 
 export function Home() {
+  useSeo(PAGES.home);
   return (
     <>
       <Header />
       <main>
         <section className="hero">
           <div className="hero-copy">
-            <h1>Treine. Analise. Evolua.</h1>
+            <h1>
+              Treine. Analise. Evolua.
+              <span className="h1-sub">Análise grátis das suas partidas de xadrez</span>
+            </h1>
             <p className="lead">
               Análise completa das suas partidas do Chess.com, de graça e sem limite. Digite seu nick e descubra onde
               você perde pontos, lance por lance.

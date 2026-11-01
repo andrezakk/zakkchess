@@ -21,6 +21,7 @@ import {
 } from '../lib/chesscom';
 import {MASCOT_NAME} from '../lib/coach';
 import {enqueue, cancelQueue, useAnalysesVersion, useRunner} from '../lib/runner';
+import {useTitle} from '../seo';
 import {getDepth, listAnalyses, loadAnalysis, setDepth} from '../lib/storage';
 
 type MonthGames = {month: string; games: ChessComGame[]};
@@ -30,6 +31,7 @@ const OUTCOME_LABEL = {win: 'Vitória', loss: 'Derrota', draw: 'Empate'};
 const BATCH = 10;
 
 export function Player({nick}: {nick: string}) {
+  useTitle(`Partidas de ${nick}`);
   const [player, setPlayer] = useState<ChessComPlayer | null>(null);
   const [ratings, setRatings] = useState<Ratings>({});
   const [archives, setArchives] = useState<string[]>([]);

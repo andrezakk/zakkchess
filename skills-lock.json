@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "21st-ui": {
+      "source": "21st-dev/magic-mcp",
+      "sourceType": "github",
+      "skillPath": "skills/21st-ui/SKILL.md",
+      "computedHash": "9821c076881b19fe173eb789ed5b0acc7939251ce08875333b9fc1370c1a1526"
+    },
     "migrate-radix-to-base": {
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/migrate-radix-to-base/SKILL.md",
       "computedHash": "e1f2030ee5059be3dff0812ca0e4b995ee9fa3132176f049ebe6c90346a6755e"
+    },
+    "seo-audit": {
+      "source": "JeffLi1993/seo-audit-skill",
+      "sourceType": "github",
+      "skillPath": "seo-audit/SKILL.md",
+      "computedHash": "73fba291bee4a18cc8bf7511f08c9728b50d6f88f44f91be6b50a12b03cea982"
+    },
+    "seo-audit-full": {
+      "source": "JeffLi1993/seo-audit-skill",
+      "sourceType": "github",
+      "skillPath": "seo-audit-full/SKILL.md",
+      "computedHash": "df240ea40386b68c00dd2154a578613cf41aed20526a13154e6317f98646cc29"
     },
     "shadcn": {
       "source": "shadcn/ui",

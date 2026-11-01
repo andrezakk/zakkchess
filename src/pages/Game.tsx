@@ -17,6 +17,7 @@ import {
 } from '../lib/chesscom';
 import {CLASS_INFO, coachLine, MASCOT_NAME, sanPt} from '../lib/coach';
 import {enqueue, useAnalysesVersion, useRunner} from '../lib/runner';
+import {useTitle} from '../seo';
 import {loadAnalysis} from '../lib/storage';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -32,6 +33,7 @@ function formatEval(m: AnalyzedMove | undefined): string {
 }
 
 export function Game({nick, month, uuid, initialPly}: {nick: string; month: string; uuid: string; initialPly?: number}) {
+  useTitle(`Análise da partida de ${nick}`);
   const [game, setGame] = useState<ChessComGame | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ply, setPly] = useState(initialPly ?? 0);

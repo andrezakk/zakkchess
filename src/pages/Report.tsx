@@ -5,12 +5,14 @@ import {Footer, Header} from '../components/ui';
 import {ERROR_LABEL, MASCOT_NAME, PHASE_LABEL} from '../lib/coach';
 import {buildPlan, buildReport, diagnosis, momentText} from '../lib/report';
 import {useAnalysesVersion} from '../lib/runner';
+import {useTitle} from '../seo';
 import {listAnalyses} from '../lib/storage';
 
 const FREE_DAYS = 3;
 const fmt = (n: number) => n.toFixed(1).replace('.', ',');
 
 export function Report({nick}: {nick: string}) {
+  useTitle(`Onde ${nick} mais erra`);
   const version = useAnalysesVersion();
   const items = useMemo(() => listAnalyses(nick), [nick, version]);
   const report = useMemo(() => buildReport(nick, items), [nick, items]);
