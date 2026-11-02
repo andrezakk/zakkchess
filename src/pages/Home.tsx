@@ -1,5 +1,6 @@
 import {Link} from 'wouter';
 import {HeroBoard} from '../components/HeroBoard';
+import {DemoGame} from '../components/DemoGame';
 import {CoachBubble, Mascot} from '../components/Mascot';
 import {ClassBadge, Footer, Header, NickForm} from '../components/ui';
 import {PAGES, useSeo} from '../seo';
@@ -23,27 +24,6 @@ const LEGEND: {title: string; items: MoveClass[]}[] = [
   {title: 'Deslizes', items: ['inaccuracy', 'mistake', 'blunder']},
 ];
 
-type Mv = {san: string; cls?: MoveClass};
-// Lances 10 a 17 da partida da Ópera, com as notas que o Zakk Chess deu (profundidade 14).
-const OPERA: [number, Mv, Mv | null][] = [
-  [10, {san: 'Cxb5'}, {san: 'cxb5', cls: 'inaccuracy'}],
-  [11, {san: 'Bxb5+', cls: 'great'}, {san: 'Cbd7'}],
-  [12, {san: 'O-O-O'}, {san: 'Td8'}],
-  [13, {san: 'Txd7'}, {san: 'Txd7'}],
-  [14, {san: 'Td1', cls: 'great'}, {san: 'De6'}],
-  [15, {san: 'Bxd7+'}, {san: 'Cxd7'}],
-  [16, {san: 'Db8+', cls: 'brilliant'}, {san: 'Cxb8'}],
-  [17, {san: 'Td8#'}, null],
-];
-
-function MoveChip({m}: {m: Mv}) {
-  return (
-    <span className={`mv-chip ${m.cls ? `mv-${m.cls}` : ''}`}>
-      {m.cls && <ClassBadge cls={m.cls} size="sm" />}
-      {m.san}
-    </span>
-  );
-}
 
 const STEPS = [
   {title: 'Digite seu nick', text: 'Buscamos suas partidas direto do Chess.com. Sem cadastro, sem senha.'},
@@ -85,38 +65,12 @@ export function Home() {
           <div className="section-head">
             <h2 id="notas">Cada lance com uma nota</h2>
             <p className="lead">
-              Do brilhante ao erro grave. Você vê a precisão de cada jogador e um rating estimado da partida, calculado a
-              partir da qualidade dos lances.
+              Role a página e veja o final de uma das partidas mais famosas da história, Morphy contra o Duque de Brunswick
+              (Paris, 1858), analisado lance por lance pelo Zakk Chess.
             </p>
           </div>
           <div className="showcase">
-            <figure className="annotated">
-              <figcaption>
-                <strong>Morphy × Duque de Brunswick</strong>
-                <span>Paris, 1858. O final da partida, analisado pelo Zakk Chess.</span>
-              </figcaption>
-              <ol className="annotated-moves">
-                {OPERA.map(([n, w, b]) => (
-                  <li key={n}>
-                    <span className="mv-n">{n}.</span>
-                    <MoveChip m={w} />
-                    {b ? <MoveChip m={b} /> : <span />}
-                  </li>
-                ))}
-              </ol>
-              <div className="annotated-score" aria-label="Precisão e rating estimado de cada jogador">
-                <div>
-                  <span className="sample-name">Morphy</span>
-                  <span className="sample-acc">98,6</span>
-                  <span className="sample-rating">rating estimado 2.875</span>
-                </div>
-                <div>
-                  <span className="sample-name">Duque</span>
-                  <span className="sample-acc muted-acc">88,8</span>
-                  <span className="sample-rating">rating estimado 2.125</span>
-                </div>
-              </div>
-            </figure>
+            <DemoGame />
             <div className="legend">
               {LEGEND.map((g) => (
                 <div key={g.title} className="legend-group">

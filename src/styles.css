@@ -532,7 +532,6 @@ h3 { font-family: var(--display); font-weight: 700; font-size: 1.15rem; line-hei
   .section { padding: 5rem 2rem; }
   .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: end; }
   .section-head .lead { margin-top: 0; }
-  .showcase { grid-template-columns: 1.2fr 0.8fr; gap: 3rem; margin-top: 2.5rem; }
     .steps { grid-template-columns: repeat(2, 1fr); gap: 2.25rem 3rem; }
   .pro-teaser-card { grid-template-columns: auto 1fr; gap: 2rem; padding: 2.5rem; align-items: center; }
   .page { padding: 0.5rem 2rem 2rem; }
@@ -760,9 +759,56 @@ p, li { text-wrap: pretty; }
 .day-focus { color: var(--faint); font-size: 0.85rem; margin-top: 0.15rem; }
 
 @media (min-width: 52rem) {
-  .showcase { grid-template-columns: 1fr 1fr; }
   .worst { grid-template-columns: minmax(0, 20rem) 1fr; align-items: center; gap: 2rem; padding: 1.4rem; }
   .worst-board { max-width: none; }
   .worst figcaption { gap: 0.6rem; }
 }
 .compare .panel-title { font-size: clamp(1.6rem, 5vw, 2.1rem); }
+
+/* ================= Demonstração que joga na rolagem ================= */
+.showcase { display: grid; gap: 2.5rem; }
+.demo { position: relative; height: calc(var(--steps) * 70vh + 30vh); margin: 0 -1.25rem; }
+.demo-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  align-content: center;
+  gap: 0.9rem;
+  padding: 0.75rem 1.25rem;
+}
+.demo-board { width: min(100%, 52svh); margin: 0 auto; border-radius: 12px; box-shadow: 0 22px 44px -18px rgba(0, 0, 0, 0.7); }
+.demo-side { display: grid; gap: 0.75rem; width: min(100%, 34rem); margin: 0 auto; }
+.demo-side .coach-live { min-height: 7.5rem; }
+.demo-moves { display: none; }
+.demo-progress { display: flex; gap: 0.3rem; }
+.demo-progress span { flex: 1; height: 3px; border-radius: 3px; background: var(--surface-2); transition: background 0.3s ease; }
+.demo-progress span.on { background: var(--accent); }
+.demo-track { position: absolute; inset: 0; display: grid; grid-template-rows: repeat(var(--steps), 70vh) 30vh; pointer-events: none; }
+.demo-static { display: grid; gap: 0.6rem; padding-left: 1.2rem; color: var(--muted); }
+.demo-static strong { color: var(--text); }
+
+@media (min-width: 52rem) {
+  .demo { margin: 0; }
+  .demo-stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 3rem; padding: 2rem 0; }
+  .demo-board { width: min(100%, 76vh); }
+  .demo-side { width: 100%; gap: 1.1rem; }
+  .demo-moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.35rem;
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .demo-mv { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; border-radius: 8px; color: #59627a; transition: color 0.3s ease, background 0.3s ease; }
+  .demo-mv.played { color: var(--muted); }
+  .demo-mv.current { color: var(--bg); background: var(--accent); }
+  .demo-n { color: var(--faint); font-weight: 500; margin-right: 0.1rem; }
+  .demo-mv.current .demo-n { color: var(--bg); }
+  .legend { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+}
+.demo-caption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+.demo-caption strong { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.demo-caption span { color: var(--faint); font-size: 0.88rem; }
+@media (min-width: 52rem) { .demo-caption strong { font-size: 1.5rem; } }
